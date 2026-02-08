@@ -1,0 +1,71 @@
+import { QuestionsService } from './questions.service';
+import { CreateQuestionDto } from './dto/create-question.dto';
+import { UpdateQuestionDto } from './dto/update-question.dto';
+export declare class QuestionsController {
+    private readonly questions;
+    constructor(questions: QuestionsService);
+    list(unitId?: string, categoryId?: string, isActive?: string): Promise<{
+        id: bigint;
+        categoryId: bigint;
+        text: string;
+        choiceA: string;
+        choiceB: string;
+        choiceC: string;
+        choiceD: string;
+        answer: import("@prisma/client").$Enums.QuestionAnswer;
+        explanation: string;
+        isPublic: boolean;
+        isActive: boolean;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }[]>;
+    create(dto: CreateQuestionDto): Promise<{
+        id: bigint;
+        categoryId: bigint;
+        text: string;
+        choiceA: string;
+        choiceB: string;
+        choiceC: string;
+        choiceD: string;
+        answer: import("@prisma/client").$Enums.QuestionAnswer;
+        explanation: string;
+        isPublic: boolean;
+        isActive: boolean;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    update(id: number, dto: UpdateQuestionDto): Promise<{
+        id: bigint;
+        categoryId: bigint;
+        text: string;
+        choiceA: string;
+        choiceB: string;
+        choiceC: string;
+        choiceD: string;
+        answer: import("@prisma/client").$Enums.QuestionAnswer;
+        explanation: string;
+        isPublic: boolean;
+        isActive: boolean;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    remove(id: number): Promise<{
+        id: bigint;
+        categoryId: bigint;
+        text: string;
+        choiceA: string;
+        choiceB: string;
+        choiceC: string;
+        choiceD: string;
+        answer: import("@prisma/client").$Enums.QuestionAnswer;
+        explanation: string;
+        isPublic: boolean;
+        isActive: boolean;
+        deletedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+}

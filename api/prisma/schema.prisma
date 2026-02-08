@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  user
+}
+
+enum QuestionAnswer {
+  A
+  B
+  C
+  D
+}
+
+enum ResultMode {
+  free
+  assignment
+}
+
+enum SelectedOption {
+  A
+  B
+  C
+  D
+  UNKNOWN
+}
+
+model User {
+  id           BigInt           @id @default(autoincrement())
+  email        String           @unique
+  username     String
+  passwordHash String           @map("password_hash")
+  role         UserRole
+  isActive     Boolean          @default(true) @map("is_active")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  results           Result[]
+  allowedUnits      UserAllowedUnit[]
+
+  @@map("users")
+}
+
+model Unit {
+  id        BigInt     @id @default(autoincrement())
+  name      String
+  isActive  Boolean    @default(true) @map("is_active")
+  deletedAt DateTime?  @map("deleted_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  categories Category[]
+  results    Result[]
+  allowedUsers UserAllowedUnit[]
+
+  @@map("units")
+}
+
+model Category {
+  id        BigInt     @id @default(autoincrement())
+  unitId    BigInt     @map("unit_id")
+  name      String
+  isActive  Boolean    @default(true) @map("is_active")
+  deletedAt DateTime?  @map("deleted_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  unit       Unit        @relation(fields: [unitId], references: [id])
+  questions  Question[]
+  assignments Assignment[]
+
+  @@index([unitId], map: "idx_categories_unit_id")
+  @@map("categories")
+}
+
+model Question {
+  id         BigInt          @id @default(autoincrement())
+  categoryId BigInt          @map("category_id")
+  text       String
+  choiceA    String          @map("choice_a")
+  choiceB    String          @map("choice_b")
+  choiceC    String          @map("choice_c")
+  choiceD    String          @map("choice_d")
+  answer     QuestionAnswer
+  explanation String
+  isPublic   Boolean         @default(true) @map("is_public")
+  isActive   Boolean         @default(true) @map("is_active")
+  deletedAt  DateTime?       @map("deleted_at")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+
+  category    Category    @relation(fields: [categoryId], references: [id])
+  assignments Assignment[]
+  resultItems ResultItem[]
+
+  @@index([categoryId], map: "idx_questions_category_id")
+  @@map("questions")
+}
+
+model Assignment {
+  id         BigInt   @id @default(autoincrement())
+  categoryId BigInt   @map("category_id")
+  questionId BigInt   @map("question_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category Category @relation(fields: [categoryId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@unique([categoryId, questionId])
+  @@index([categoryId], map: "idx_assignments_category_id")
+  @@index([questionId], map: "idx_assignments_question_id")
+  @@map("assignments")
+}
+
+model UserAllowedUnit {
+  id     BigInt @id @default(autoincrement())
+  userId BigInt @map("user_id")
+  unitId BigInt @map("unit_id")
+
+  user User @relation(fields: [userId], references: [id])
+  unit Unit @relation(fields: [unitId], references: [id])
+
+  @@unique([userId, unitId])
+  @@map("user_allowed_units")
+}
+
+model Result {
+  id         BigInt     @id @default(autoincrement())
+  userId     BigInt     @map("user_id")
+  mode       ResultMode
+  unitId     BigInt     @map("unit_id")
+  categoryIds Json      @map("category_ids")
+  total      Int
+  correct    Int
+  rate       Decimal
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  user        User        @relation(fields: [userId], references: [id])
+  unit        Unit        @relation(fields: [unitId], references: [id])
+  resultItems ResultItem[]
+
+  @@index([userId], map: "idx_results_user_id")
+  @@map("results")
+}
+
+model ResultItem {
+  id        BigInt         @id @default(autoincrement())
+  resultId  BigInt         @map("result_id")
+  questionId BigInt        @map("question_id")
+  selected  SelectedOption
+  isCorrect Boolean        @map("is_correct")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  result   Result   @relation(fields: [resultId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@index([resultId], map: "idx_result_items_result_id")
+  @@map("result_items")
+}
+
+model Invite {
+  id            BigInt   @id @default(autoincrement())
+  email         String
+  role          UserRole
+  token         String   @unique
+  allowedUnitIds Json?   @map("allowed_unit_ids")
+  expiresAt     DateTime @map("expires_at")
+  usedAt        DateTime? @map("used_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("invites")
+}
