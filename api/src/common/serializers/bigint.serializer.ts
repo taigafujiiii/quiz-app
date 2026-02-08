@@ -1,5 +1,6 @@
 export function serializeBigInt<T>(value: T): T {
-  return JSON.parse(
+  const serialized: unknown = JSON.parse(
     JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v)),
   );
+  return serialized as T;
 }

@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { UnitsService } from './units.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
@@ -24,8 +25,8 @@ export class UnitsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async list(@Req() req: any) {
-    const user = req.user as { id: string; role: string };
+  async list(@Req() req: Request & { user: { id: string; role: string } }) {
+    const user = req.user;
     const data =
       user.role === 'admin'
         ? await this.units.listAll()
