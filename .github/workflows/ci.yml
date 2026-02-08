@@ -53,6 +53,17 @@ jobs:
         working-directory: api
         run: npm run lint
 
+      - name: Build (api)
+        working-directory: api
+        run: npm run build
+
+      - name: Smoke test (api)
+        working-directory: api
+        run: |
+          PORT=3001 node dist/main.js &
+          sleep 3
+          curl -f http://localhost:3001/
+
   web:
     runs-on: ubuntu-latest
     steps:
